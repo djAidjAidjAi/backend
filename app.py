@@ -76,12 +76,16 @@ def get_tracks():
         # playlist_uri = playlist_url.split('/')[-1].split('?')[0]
 
         # Retrieve all tracks with pagination
+        print("1")
         results = sp.playlist_tracks(playlist_url)
+        print("2")
         tracks = results['items']
+        print("3")
         while results['next']:
             results = sp.next(results)
             tracks.extend(results['items'])
 
+        print("4")
         song_str = "; ".join(
             f"{item['track']['name']} by {item['track']['artists'][0]['name']}"
             for item in tracks
@@ -95,9 +99,11 @@ def get_tracks():
                                  Bear in mind that you are summing up the moods and atmosphers of the songs, and summarizing them all in one sentence. 
                                  Also bear in mind that this one sentence is the only output expected, also bear in mind that you do not need to
                                  reference the artist or title, just describe the vibes; """, song_str)
+        print("5")
         print(response)
 
         audio_bytes = get_audio_bytes(youtube_url)
+        print("6")
 
         files = {
             "audio_file": ("input.wav", BytesIO(audio_bytes), "audio/wav")
