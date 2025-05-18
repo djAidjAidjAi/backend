@@ -28,7 +28,7 @@ client = genai.Client(api_key=gemini)
 app = Flask(__name__)
 CORS(app)
 
-def fake_get_audio_bytes(file_path='sample.wav'):
+def fake_get_audio_bytes(file_path='./sample.wav'):
     """
     Load a local .wav file and return its contents as bytes.
     Default file is 'sample.wav' in the same directory.
@@ -43,31 +43,31 @@ def fake_get_audio_bytes(file_path='sample.wav'):
         raise RuntimeError(f"Error reading audio file: {str(e)}")
     
 
-def get_audio_bytes(url):
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'quiet': True,
-        'no_warnings': True,
-        'outtmpl': '-',  # Output to stdout
-        'cookiefile': os.path.expanduser('~/cookies.txt'),  # Or wherever you save it
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'wav',
-        }],
-    }
+# def get_audio_bytes(url):
+#     ydl_opts = {
+#         'format': 'bestaudio/best',
+#         'quiet': True,
+#         'no_warnings': True,
+#         'outtmpl': '-',  # Output to stdout
+#         'cookiefile': os.path.expanduser('~/cookies.txt'),  # Or wherever you save it
+#         'postprocessors': [{
+#             'key': 'FFmpegExtractAudio',
+#             'preferredcodec': 'wav',
+#         }],
+#     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        audio_url = info['url']
+#     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+#         info = ydl.extract_info(url, download=False)
+#         audio_url = info['url']
 
-    # Use ffmpeg to stream the audio directly into memory
-    process = subprocess.Popen(
-        ['ffmpeg', '-i', audio_url, '-f', 'wav', '-'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL
-    )
-    audio_bytes = process.stdout.read()
-    return audio_bytes
+#     # Use ffmpeg to stream the audio directly into memory
+#     process = subprocess.Popen(
+#         ['ffmpeg', '-i', audio_url, '-f', 'wav', '-'],
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.DEVNULL
+#     )
+#     audio_bytes = process.stdout.read()
+#     return audio_bytes
 
 
 def generate_text(prompt: str, songs: str):
@@ -135,8 +135,10 @@ def get_tracks():
             data=data,
             stream=True  # IMPORTANT for streaming response
         )
+        print("7")
         music_response.raise_for_status()
 
+        print("8")
         # Return streamed response as file download to the client
         return Response(
             stream_with_context(music_response.iter_content(chunk_size=8192)),
