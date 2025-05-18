@@ -33,7 +33,8 @@ def get_audio_bytes(url):
         'format': 'bestaudio/best',
         'quiet': True,
         'no_warnings': True,
-        'outtmpl': '-',
+        'outtmpl': '-',  # Output to stdout
+        'cookiefile': os.path.expanduser('~/cookies.txt'),  # Or wherever you save it
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
