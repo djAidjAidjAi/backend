@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response, stream_with_context
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import spotipy
@@ -17,7 +18,6 @@ load_dotenv()
 gemini = os.getenv('GEMINI_API_KEY')
 music_model_url = os.getenv('MUSIC_MODEL_URL')
 
-
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
     client_id=os.getenv('SPOTIFY_CLIENT_ID'),
     client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
@@ -26,6 +26,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
 client = genai.Client(api_key=gemini)
 
 app = Flask(__name__)
+CORS(app)
 
 def get_audio_bytes(url):
     ydl_opts = {
@@ -90,7 +91,8 @@ def get_tracks():
                                  Please describe the specific characteristics of the songs' emotions accurately and summarize them in one sentence, 
                                  focusing on the effect of the highlight atmosphere of the songs mentioned on the overall atmosphere of the song. 
                                  Bear in mind that you are summing up the moods and atmosphers of the songs, and summarizing them all in one sentence. 
-                                 Also bear in mind that this one sentence is the only output expected; """, song_str)
+                                 Also bear in mind that this one sentence is the only output expected, also bear in mind that you do not need to
+                                 reference the artist or title, just describe the vibes; """, song_str)
         print(response)
 
         audio_bytes = get_audio_bytes(youtube_url)
@@ -103,14 +105,20 @@ def get_tracks():
             "prompt2": "" 
         }
         print("Music model url is ", music_model_url)
-        response = requests.post(music_model_url + "/generate", files=files, data=data)
+        music_response = requests.post(
+            music_model_url + "/generate",
+            files=files,
+            data=data,
+            stream=True  # IMPORTANT for streaming response
+        )
+        music_response.raise_for_status()
 
-        if response.ok:
-            print("✅ Success:", response.json())
-        else:
-            print("❌ Error:", response.status_code, response.text)
-
-        return jsonify({"success": "Hurray!" }), 200
+        # Return streamed response as file download to the client
+        return Response(
+            stream_with_context(music_response.iter_content(chunk_size=8192)),
+            content_type=music_response.headers.get('Content-Type', 'audio/wav'),
+            headers={"Content-Disposition": "attachment; filename=output.wav"}
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
