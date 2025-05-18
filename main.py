@@ -64,10 +64,11 @@ def generate_text(prompt: str, songs: str):
 
 @app.route("/tracks")
 def get_tracks():
+    print("Got request from the client")
     # Get playlist URL from query parameter
     youtube_url = request.args.get('youtube')
     playlist_url = request.args.get('url')
-    if not playlist_url:
+    if not playlist_url and not youtube_url:
         return jsonify({"error": "Missing 'url' query parameter"}), 400
 
     try:
@@ -87,6 +88,7 @@ def get_tracks():
             if item.get('track')
             )       #         })
 
+        print("parsed the songs in the playlist", song_str)
         response = generate_text("""
                                  Please describe the specific characteristics of the songs' emotions accurately and summarize them in one sentence, 
                                  focusing on the effect of the highlight atmosphere of the songs mentioned on the overall atmosphere of the song. 
@@ -104,7 +106,7 @@ def get_tracks():
             "prompt1": response,
             "prompt2": "" 
         }
-        print("Music model url is ", music_model_url)
+        print("Music model url is ", music_model_url, "Asking music model")
         music_response = requests.post(
             music_model_url + "/generate",
             files=files,
