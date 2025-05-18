@@ -28,6 +28,21 @@ client = genai.Client(api_key=gemini)
 app = Flask(__name__)
 CORS(app)
 
+def fake_get_audio_bytes(file_path='sample.wav'):
+    """
+    Load a local .wav file and return its contents as bytes.
+    Default file is 'sample.wav' in the same directory.
+    """
+    try:
+        with open(file_path, 'rb') as f:
+            audio_bytes = f.read()
+        return audio_bytes
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The audio file '{file_path}' was not found.")
+    except Exception as e:
+        raise RuntimeError(f"Error reading audio file: {str(e)}")
+    
+
 def get_audio_bytes(url):
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -103,7 +118,7 @@ def get_tracks():
         print("5")
         print(response)
 
-        audio_bytes = get_audio_bytes(youtube_url)
+        audio_bytes = fake_get_audio_bytes(youtube_url)
         print("6")
 
         files = {
