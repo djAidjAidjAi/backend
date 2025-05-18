@@ -76,7 +76,7 @@ def get_tracks():
         # playlist_uri = playlist_url.split('/')[-1].split('?')[0]
 
         # Retrieve all tracks with pagination
-        results = sp.playlist_tracks(playlist_uri)
+        results = sp.playlist_tracks(playlist_url)
         tracks = results['items']
         while results['next']:
             results = sp.next(results)
