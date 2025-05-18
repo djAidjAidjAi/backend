@@ -119,7 +119,7 @@ def get_tracks():
         print("5")
         print(response)
 
-        audio_bytes = fake_get_audio_bytes(youtube_url)
+        audio_bytes = fake_get_audio_bytes()
         print("6")
 
         files = {
